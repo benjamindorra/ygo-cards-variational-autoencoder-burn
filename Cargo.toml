@@ -1,0 +1,8 @@
+[package]
+name = "ygo_image_generation"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+burn = { version = "0.18.0", features = ["std", "tui", "train", "vision", "wgpu", "fusion"], default-features = false }
+image = "0.25.8"
