@@ -7,6 +7,7 @@ mod training;
 mod data;
 mod dataset;
 mod inference;
+mod residual_block;
 
 use crate::{
     var_autoencoder::VarAutoencoderConfig,
@@ -26,18 +27,24 @@ fn main() {
 
     let device = burn::backend::wgpu::WgpuDevice::default();
     let artifact_dir = "training";
-     
+
+    
     crate::training::train::<MyAutodiffBackend>(
         artifact_dir,
         TrainingConfig::new(VarAutoencoderConfig::new(), AdamWConfig::new()),
         device.clone(),
     );
     
+    
+
     crate::inference::infer::<MyBackend>(
         artifact_dir,
         device,
         burn::data::dataset::vision::ImageFolderDataset::cards_test()
             .get(0)
+            .unwrap(),
+        burn::data::dataset::vision::ImageFolderDataset::cards_test()
+            .get(1)
             .unwrap(),
     );
 }

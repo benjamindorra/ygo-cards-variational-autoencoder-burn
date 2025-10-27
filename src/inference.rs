@@ -8,7 +8,7 @@ use burn::{
 use image::{RgbImage, Rgb};
 use burn::prelude::*;
 
-pub fn infer<B: Backend>(artifact_dir: &str, device: B::Device, item: ImageDatasetItem) {
+pub fn infer<B: Backend>(artifact_dir: &str, device: B::Device, item1: ImageDatasetItem, item2: ImageDatasetItem) {
 
     // Load model and select the decoder
     let config = TrainingConfig::load(format!("{artifact_dir}/config.json"))
@@ -21,20 +21,24 @@ pub fn infer<B: Backend>(artifact_dir: &str, device: B::Device, item: ImageDatas
         .init::<B>(&device)
         .load_record(record);
 
-    
+     
     // Decoder inference from noise
+    let encoder = model.encoder;
     let decoder = model.decoder;
-    let noise = Tensor::<B, 4>::random(Shape::new([1,8,16,24]),Normal(0., 1.), &device);
-    let output = decoder.forward(noise);
-    
+    //let noise = Tensor::<B, 4>::random(Shape::new([1,16,48,33]),Normal(0., 1.), &device);
+    //let output = decoder.forward(noise);
 
     let batcher = CardsBatcher::<B>::new(device.clone());
-   
-    /*
+    
     // Reconstruction of a test image 
-    let batch: CardsBatch<B> = batcher.batch(vec![item], &device);
-    let output = model.forward(batch.images).sample;
-    */
+    let batch1: CardsBatch<B> = batcher.batch(vec![item1], &device);
+    let encoding1 = encoder.forward(batch1.images);
+    let batch2: CardsBatch<B> = batcher.batch(vec![item2], &device);
+    let encoding2 = encoder.forward(batch2.images);
+    let intermediate_sample = (encoding1.sample + encoding2.sample) / 2;
+    let output = decoder.forward(intermediate_sample);
+    //let output = model.forward(batch.images).sample;
+    
     
     // Reshape output image and denormalize
     // Denormalize
