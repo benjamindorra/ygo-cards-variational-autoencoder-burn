@@ -1,8 +1,11 @@
 import os
 from PIL import Image
 
-input_dir = "card_images_small/train"
-output_dir = "card_images_small/invalid_size"
+images_dir = "card_images_small"
+input_dir = os.path.join(images_dir, "train")
+output_dir = os.path.join(images_dir, "invalid_size")
+if not os.path.exists(output_dir):
+    os.mkdir(output_dir)
 expected_width = 268
 expected_height = 391
 
