@@ -13,10 +13,10 @@ pub struct VarAutoencoder<B: Backend> {
 
 #[derive(Config, Debug)]
 pub struct VarAutoencoderConfig {
-    #[config(default = "[3,16,32,64,32]")]
-    encoder_channels: [usize; 5],
-    #[config(default = "[16,64,32,16,3]")]
-    decoder_channels: [usize; 5],
+    #[config(default = "[3,8,16,32,64,128]")]
+    encoder_channels: [usize; 6],
+    #[config(default = "[64,64,32,16,8,3]")]
+    decoder_channels: [usize; 6],
     #[config(default = "[391, 268]")]
     output_size: [usize; 2],
 

@@ -8,6 +8,7 @@ use burn::{
     prelude::*,
 };
 
+/*
 // Mean and std values computed on the training dataset
 const MEAN: [f32; 3] = [0.51779658, 0.46859592, 0.46552556];
 const STD: [f32; 3] = [0.27136453, 0.25286143, 0.25103455];
@@ -40,27 +41,23 @@ impl<B: Backend> Normalizer<B> {
         }
     }
 }
-
+*/
 
 #[derive(Clone)]
-pub struct CardsBatcher<B: Backend> {
-    pub normalizer: Normalizer<B>,
-}
+pub struct CardsBatcher {}
 
 #[derive(Clone, Debug)]
 pub struct CardsBatch<B: Backend> {
     pub images: Tensor<B, 4>,
 }
 
-impl<B: Backend> CardsBatcher<B> {
-    pub fn new(device: B::Device) -> Self {
-        Self {
-            normalizer: Normalizer::<B>::new(&device),
-        }
+impl CardsBatcher {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
-impl<B: Backend> Batcher<B, ImageDatasetItem, CardsBatch<B>> for CardsBatcher<B> {
+impl<B: Backend> Batcher<B, ImageDatasetItem, CardsBatch<B>> for CardsBatcher {
     fn batch(&self, items: Vec<ImageDatasetItem>, device: &B::Device) -> CardsBatch<B> {
         fn images_as_vec_u8(item: ImageDatasetItem) -> Vec<u8> {
             item.image
@@ -80,7 +77,7 @@ impl<B: Backend> Batcher<B, ImageDatasetItem, CardsBatch<B>> for CardsBatcher<B>
             .collect();
 
         let images = Tensor::stack(images, 0);
-        let images = self.normalizer.to_device(device).normalize(images);
+        //let images = self.normalizer.to_device(device).normalize(images);
 
         CardsBatch { images }
 

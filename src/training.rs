@@ -19,7 +19,6 @@ use burn::{
         metric::LossMetric,
     },
     grad_clipping::GradientClippingConfig,
-    lr_scheduler::exponential::{ExponentialLrSchedulerConfig},
 };
         
 impl<B: Backend> VarAutoencoder<B> {
@@ -45,7 +44,7 @@ impl<B: Backend> VarAutoencoder<B> {
             - mean_square 
             - std_square;
         let distribution_loss: Tensor<B, 1> = - 0.5 - distribution_loss.mean() / 2.;
-        let loss =  distribution_loss + reconstruction_loss;
+        let loss = distribution_loss + reconstruction_loss;
 
         RegressionOutput::new(loss, output_flatten, targets_flatten)
     }
@@ -71,7 +70,7 @@ pub struct TrainingConfig {
     pub optimizer: AdamWConfig,
     #[config(default = 1.)]
     pub clip_value: f32,
-    #[config(default = 10)]
+    #[config(default = 20)]
     pub num_epochs: usize,
     #[config(default = 4)]
     pub batch_size: usize,
@@ -79,10 +78,8 @@ pub struct TrainingConfig {
     pub num_workers: usize,
     #[config(default = 42)]
     pub seed: u64,
-    #[config(default = 4e-4)]
-    pub initial_lr: f64,
-    #[config(default = 1.0)]
-    pub gamma: f64,
+    #[config(default = 2e-4)]
+    pub lr: f64,
 }
 
 fn create_artifact_dir(artifact_dir: &str) {
@@ -99,8 +96,8 @@ pub fn train<B: AutodiffBackend>(artifact_dir: &str, config: TrainingConfig, dev
     B::seed(config.seed);
 
     //let batcher = CardsBatcher::default();
-    let batcher = CardsBatcher::<B>::new(device.clone());
-    let batcher_test = CardsBatcher::<B::InnerBackend>::new(device.clone());
+    let batcher = CardsBatcher::new();
+    let batcher_test = CardsBatcher::new();
 
     let dataloader_train = DataLoaderBuilder::new(batcher.clone())
         .batch_size(config.batch_size)
@@ -114,10 +111,6 @@ pub fn train<B: AutodiffBackend>(artifact_dir: &str, config: TrainingConfig, dev
         .num_workers(config.num_workers)
         .build(ImageFolderDataset::cards_test());
 
-    let scheduler = ExponentialLrSchedulerConfig::new(config.initial_lr, config.gamma)
-        .init()
-        .expect("The lr scheduler should instantiate normally");
-
     let learner = LearnerBuilder::new(artifact_dir)
         .metric_train_numeric(LossMetric::new())
         .metric_valid_numeric(LossMetric::new())
@@ -129,7 +122,7 @@ pub fn train<B: AutodiffBackend>(artifact_dir: &str, config: TrainingConfig, dev
         .build(
             config.var_autoencoder.init::<B>(&device),
             config.optimizer.init().with_grad_clipping(GradientClippingConfig::Value(config.clip_value).init()),
-            scheduler,
+            config.lr,
         );
     
     let model_trained = learner.fit(dataloader_train, dataloader_test);

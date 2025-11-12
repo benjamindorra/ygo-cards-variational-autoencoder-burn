@@ -21,21 +21,22 @@ use burn::{
     data::dataset::Dataset,
 };
 
+use std::fs;
+
 fn main() {
     type MyBackend = Wgpu<f32, i32>;
     type MyAutodiffBackend = Autodiff<MyBackend>;
 
     let device = burn::backend::wgpu::WgpuDevice::default();
     let artifact_dir = "training";
-
-    
-    crate::training::train::<MyAutodiffBackend>(
-        artifact_dir,
-        TrainingConfig::new(VarAutoencoderConfig::new(), AdamWConfig::new()),
-        device.clone(),
-    );
-    
-    
+   
+    if !fs::exists(artifact_dir).unwrap() {
+        crate::training::train::<MyAutodiffBackend>(
+            artifact_dir,
+            TrainingConfig::new(VarAutoencoderConfig::new(), AdamWConfig::new()),
+            device.clone(),
+        );
+    }
 
     crate::inference::infer::<MyBackend>(
         artifact_dir,
