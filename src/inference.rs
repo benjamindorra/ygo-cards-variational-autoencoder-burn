@@ -49,7 +49,7 @@ pub fn infer<B: Backend>(artifact_dir: &str, device: B::Device, item1: ImageData
     write_image(output, &out_path);
 
     for i in 0..num_generated {
-        let noise = Tensor::<B, 4>::random(Shape::new([1,64,24,16]),Normal(0., 1.), &device);
+        let noise = Tensor::<B, 4>::random(Shape::new([1,32,48,33]),Normal(0., 1.), &device);
         let output = decoder.forward(noise);
         let out_path = generated_images_dir.join(format!("generated_image_{}.jpg", i));
         write_image(output, &out_path);

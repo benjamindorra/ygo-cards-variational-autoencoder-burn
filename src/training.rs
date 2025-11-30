@@ -44,7 +44,7 @@ impl<B: Backend> VarAutoencoder<B> {
             - mean_square 
             - std_square;
         let distribution_loss: Tensor<B, 1> = - 0.5 - distribution_loss.mean() / 2.;
-        let loss = distribution_loss + reconstruction_loss;
+        let loss = 0.01 * distribution_loss + reconstruction_loss;
 
         RegressionOutput::new(loss, output_flatten, targets_flatten)
     }

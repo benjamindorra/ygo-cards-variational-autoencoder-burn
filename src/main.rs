@@ -8,6 +8,7 @@ mod data;
 mod dataset;
 mod inference;
 mod residual_block;
+mod convnext2_block;
 
 use crate::{
     var_autoencoder::VarAutoencoderConfig,
