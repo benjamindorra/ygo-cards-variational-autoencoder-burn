@@ -14,4 +14,4 @@ wheels/
 
 /target
 /training*
-*.jpg
+/data/card_images_small/
