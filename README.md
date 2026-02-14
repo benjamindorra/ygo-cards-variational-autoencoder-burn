@@ -10,7 +10,7 @@ Here are illustration for different values:
 ### Reconstruction
 
 | distribution weight | 1 | 0.1 | 0.01 |
-|---------------------|------------------------------------------------------------|------------------------------------------------------------------------------------|--------------------------------------------------------------|
+|---------------------|--------------------------------------------------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------|
 | Image 1             | ![](assets/images_convnext_x8_1kl/reconstructed_image_1.jpg) | ![](assets/images_convnext_x8_0-1kl/reconstructed_image_1.jpg)| ![](assets/images_convnext_x8_0-01kl/reconstructed_image_1.jpg)|
 | Image 2             |![](assets/images_convnext_x8_1kl/reconstructed_image_2.jpg) | ![](assets/images_convnext_x8_0-1kl/reconstructed_image_2.jpg)| ![](assets/images_convnext_x8_0-01kl/reconstructed_image_2.jpg)|
 
@@ -18,7 +18,7 @@ Here are illustration for different values:
 
 
 | distribution weight | 1 | 0.1 | 0.01 |
-|---------------------|   |||
+|---------------------|----------------------------------------------------------|-----------------------------------------------------------|-----------------------------------------------------------|
 | Image 1             | ![](assets/images_convnext_x8_1kl/generated_image_1.jpg) | ![](assets/images_convnext_x8_0-1kl/generated_image_1.jpg)| ![](assets/images_convnext_x8_0-01kl/generated_image_1.jpg)|
 | Image 7             | ![](assets/images_convnext_x8_1kl/generated_image_7.jpg) | ![](assets/images_convnext_x8_0-1kl/generated_image_7.jpg)| ![](assets/images_convnext_x8_0-01kl/generated_image_7.jpg)|
 
