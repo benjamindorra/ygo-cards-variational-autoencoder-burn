@@ -1,9 +1,9 @@
-// Largely inspired by https://github.com/tracel-ai/burn/blob/main/examples/custom-image-dataset/src/data.rs 
+// Largely inspired by https://github.com/tracel-ai/burn/blob/main/examples/custom-image-dataset/src/data.rs
 
 use burn::{
     data::{
-        dataset::vision::{ImageDatasetItem, PixelDepth},
         dataloader::batcher::Batcher,
+        dataset::vision::{ImageDatasetItem, PixelData},
     },
     prelude::*,
 };
@@ -25,9 +25,9 @@ impl<B: Backend> Normalizer<B> {
         let std = Tensor::<B, 1>::from_floats(STD, device).reshape([1,3,1,1]);
         Self { mean, std }
     }
-    
+
     pub fn normalize(&self, input: Tensor::<B, 4>) -> Tensor::<B, 4> {
-        (input - self.mean.clone()) / self.std.clone() 
+        (input - self.mean.clone()) / self.std.clone()
     }
 
     pub fn denormalize(&self, input: Tensor::<B, 4>) -> Tensor::<B, 4> {
@@ -47,8 +47,8 @@ impl<B: Backend> Normalizer<B> {
 pub struct CardsBatcher {}
 
 #[derive(Clone, Debug)]
-pub struct CardsBatch<B: Backend> {
-    pub images: Tensor<B, 4>,
+pub struct CardsBatch {
+    pub images: Tensor<4>,
 }
 
 impl CardsBatcher {
@@ -57,21 +57,21 @@ impl CardsBatcher {
     }
 }
 
-impl<B: Backend> Batcher<B, ImageDatasetItem, CardsBatch<B>> for CardsBatcher {
-    fn batch(&self, items: Vec<ImageDatasetItem>, device: &B::Device) -> CardsBatch<B> {
+impl Batcher<ImageDatasetItem, CardsBatch> for CardsBatcher {
+    fn batch(&self, items: Vec<ImageDatasetItem>, device: &Device) -> CardsBatch {
         fn images_as_vec_u8(item: ImageDatasetItem) -> Vec<u8> {
-            item.image
-                .into_iter()
-                .map(|p: PixelDepth| -> u8 { p.try_into().unwrap() })
-                .collect::<Vec<u8>>()
+            match item.image {
+                PixelData::U8(pixels) => pixels,
+                _ => panic!("This preprocessing pipeline expects an 8-bit image"),
+            }
         }
         let images = items
             .iter()
             .map(|item| TensorData::new(images_as_vec_u8(item.clone()), Shape::new([391, 268, 3])))
             .map(|data| {
-                Tensor::<B, 3>::from_data(data.convert::<B::FloatElem>(), device)
-                    .swap_dims(2,1)
-                    .swap_dims(1,0)
+                Tensor::<3>::from_data(data, device)
+                    .swap_dims(2, 1)
+                    .swap_dims(1, 0)
             })
             .map(|tensor| tensor / 255)
             .collect();
@@ -80,6 +80,5 @@ impl<B: Backend> Batcher<B, ImageDatasetItem, CardsBatch<B>> for CardsBatcher {
         //let images = self.normalizer.to_device(device).normalize(images);
 
         CardsBatch { images }
-
     }
 }

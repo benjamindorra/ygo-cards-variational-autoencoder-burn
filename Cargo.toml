@@ -4,5 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-burn = { version = "0.18.0", features = ["std", "tui", "train", "vision", "wgpu", "fusion"], default-features = false }
-image = "0.25.8"
+burn = {version = "0.22.1",  features = ["std", "tui", "train", "vision", "wgpu", "fusion"], default-features = false }
+image = "0.25.10"
+
+# Enable a small amount of optimization in the dev profile.
+[profile.dev]
+opt-level = 1
+incremental = true
+
+# Enable a large amount of optimization in the dev profile for dependencies.
+[profile.dev.package."*"]
+opt-level = 2

@@ -1,52 +1,62 @@
 #![recursion_limit = "256"]
 
-mod var_encoder;
-mod var_decoder;
-mod var_autoencoder;
-mod training;
+mod convnext2_block;
 mod data;
 mod dataset;
+//mod export;
 mod inference;
 mod residual_block;
-mod convnext2_block;
+mod training;
+mod var_autoencoder;
+mod var_decoder;
+mod var_encoder;
 
 use crate::{
-    var_autoencoder::VarAutoencoderConfig,
-    training::TrainingConfig,
-    dataset::CardsLoader,
+    dataset::CardsLoader, training::TrainingConfig, var_autoencoder::VarAutoencoderConfig,
 };
 
-use burn::{
-    backend::{Autodiff, Wgpu},
-    optim::AdamWConfig,
-    data::dataset::Dataset,
-};
+use burn::{data::dataset::Dataset, optim::AdamWConfig, tensor::Device};
 
+use std::env;
 use std::fs;
 
 fn main() {
-    type MyBackend = Wgpu<f32, i32>;
-    type MyAutodiffBackend = Autodiff<MyBackend>;
+    let device = Device::wgpu(Default::default());
 
-    let device = burn::backend::wgpu::WgpuDevice::default();
-    let artifact_dir = "training";
-   
-    if !fs::exists(artifact_dir).unwrap() {
-        crate::training::train::<MyAutodiffBackend>(
-            artifact_dir,
-            TrainingConfig::new(VarAutoencoderConfig::new(), AdamWConfig::new()),
-            device.clone(),
-        );
+    let args: Vec<String> = env::args().collect();
+
+    let mut artifact_dir = "training";
+    if args.len() > 1 {
+        artifact_dir = &args[2];
     }
 
-    crate::inference::infer::<MyBackend>(
-        artifact_dir,
-        device,
-        burn::data::dataset::vision::ImageFolderDataset::cards_test()
-            .get(0)
-            .unwrap(),
-        burn::data::dataset::vision::ImageFolderDataset::cards_test()
-            .get(1)
-            .unwrap(),
-    );
+    match args[1].as_str() {
+        "train" => {
+            if !fs::exists(artifact_dir).unwrap() {
+                crate::training::train(
+                    artifact_dir,
+                    TrainingConfig::new(VarAutoencoderConfig::new(), AdamWConfig::new()),
+                    device,
+                );
+            } else {
+                println!("Error, training dir already exists");
+            }
+        }
+        "test" => {
+            crate::inference::infer(
+                artifact_dir,
+                device,
+                burn::data::dataset::vision::ImageFolderDataset::cards_test()
+                    .get(0)
+                    .unwrap(),
+                burn::data::dataset::vision::ImageFolderDataset::cards_test()
+                    .get(1)
+                    .unwrap(),
+            );
+        }
+        //"export" => {
+        //    crate::export::export_burnpack::<MyBackend>(artifact_dir, device);
+        //}
+        &_ => {}
+    }
 }

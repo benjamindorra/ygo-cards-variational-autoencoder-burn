@@ -1,14 +1,14 @@
 use crate::{
-    var_encoder::{VarEncoder, VarEncConfig, SampleDist},
-    var_decoder::{VarDecoder, VarDecConfig},
+    var_decoder::{VarDecConfig, VarDecoder},
+    var_encoder::{SampleDist, VarEncConfig, VarEncoder},
 };
 
 use burn::prelude::*;
 
 #[derive(Module, Debug)]
-pub struct VarAutoencoder<B: Backend> {
-    pub encoder: VarEncoder<B>,
-    pub decoder: VarDecoder<B>,
+pub struct VarAutoencoder {
+    pub encoder: VarEncoder,
+    pub decoder: VarDecoder,
 }
 
 #[derive(Config, Debug)]
@@ -19,20 +19,21 @@ pub struct VarAutoencoderConfig {
     decoder_channels: [usize; 6],
     #[config(default = "[391, 268]")]
     output_size: [usize; 2],
-
 }
 
 impl VarAutoencoderConfig {
-    pub fn init<B: Backend>(&self, device: &B::Device) -> VarAutoencoder<B> {
+    pub fn init(&self, device: &Device) -> VarAutoencoder {
         VarAutoencoder {
             encoder: VarEncConfig::new(self.encoder_channels).init(device),
-            decoder: VarDecConfig::new(self.decoder_channels).with_output_size(self.output_size).init(device),
+            decoder: VarDecConfig::new(self.decoder_channels)
+                .with_output_size(self.output_size)
+                .init(device),
         }
     }
 }
 
-impl<B: Backend> VarAutoencoder<B> {
-    pub fn forward(&self, images: Tensor<B, 4>) -> SampleDist<B> {
+impl VarAutoencoder {
+    pub fn forward(&self, images: Tensor<4>) -> SampleDist {
         let encoding_dist = self.encoder.forward(images);
         let x = encoding_dist.sample;
         let x = self.decoder.forward(x);
